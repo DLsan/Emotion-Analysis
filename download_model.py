@@ -9,11 +9,19 @@ def create_model():
     model = models.Sequential([
         layers.Conv2D(32, (3, 3), activation='relu', input_shape=(48, 48, 1)),
         layers.MaxPooling2D((2, 2)),
+        layers.Dropout(0.25),
+        
         layers.Conv2D(64, (3, 3), activation='relu'),
         layers.MaxPooling2D((2, 2)),
-        layers.Conv2D(64, (3, 3), activation='relu'),
+        layers.Dropout(0.25),
+        
+        layers.Conv2D(128, (3, 3), activation='relu'),
+        layers.MaxPooling2D((2, 2)),
+        layers.Dropout(0.25),
+        
         layers.Flatten(),
-        layers.Dense(64, activation='relu'),
+        layers.Dense(128, activation='relu'),
+        layers.Dropout(0.5),
         layers.Dense(7, activation='softmax')
     ])
     
@@ -76,11 +84,43 @@ def main():
     print("Creating and training model...")
     model = create_model()
     
-    # Train the model
-    history = model.fit(X_train, y_train,
-                       epochs=10,
-                       batch_size=64,
-                       validation_data=(X_test, y_test))
+    # Add data augmentation
+    from tensorflow.keras.preprocessing.image import ImageDataGenerator
+    
+    datagen = ImageDataGenerator(
+        rotation_range=15,
+        width_shift_range=0.1,
+        height_shift_range=0.1,
+        shear_range=0.1,
+        zoom_range=0.1,
+        horizontal_flip=True,
+        fill_mode='nearest'
+    )
+    
+    # Add callbacks for better training
+    from tensorflow.keras.callbacks import EarlyStopping, ReduceLROnPlateau
+    
+    early_stopping = EarlyStopping(
+        monitor='val_loss',
+        patience=15,
+        restore_best_weights=True,
+        verbose=1
+    )
+    
+    reduce_lr = ReduceLROnPlateau(
+        monitor='val_loss',
+        factor=0.5,
+        patience=5,
+        min_lr=0.0001,
+        verbose=1
+    )
+    
+    # Train the model with increased epochs and data augmentation
+    history = model.fit(datagen.flow(X_train, y_train, batch_size=128),
+                       epochs=100,
+                       validation_data=(X_test, y_test),
+                       callbacks=[early_stopping, reduce_lr],
+                     steps_per_epoch=len(X_train) // 128)
     
     # Evaluate the model on test set
     test_loss, test_accuracy = model.evaluate(X_test, y_test)
