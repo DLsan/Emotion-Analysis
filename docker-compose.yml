@@ -1,0 +1,25 @@
+version: '3.8'
+
+services:
+  emotion-detection:
+    build: .
+    container_name: emotion-detection-app
+    ports:
+      - "5000:5000"
+    environment:
+      - FLASK_ENV=production
+      - PYTHONUNBUFFERED=1
+    # For webcam access (Linux/Mac)
+    devices:
+      - /dev/video0:/dev/video0
+    # Volumes (optional - for development)
+    # volumes:
+    #   - ./app.py:/app/app.py
+    #   - ./templates:/app/templates
+    restart: unless-stopped
+    networks:
+      - emotion-net
+
+networks:
+  emotion-net:
+    driver: bridge
