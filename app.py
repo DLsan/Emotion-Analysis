@@ -2,6 +2,7 @@ import streamlit as st
 import cv2
 import numpy as np
 import tensorflow as tf
+import keras
 
 st.set_page_config(page_title="Emotion Detection", page_icon="😊")
 
