@@ -23,7 +23,6 @@ ehthumbs.db
 Thumbs.db
 
 # Project specific
-*.h5
 *.pkl
 *.csv
 *.log 
