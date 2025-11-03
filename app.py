@@ -8,10 +8,9 @@ st.set_page_config(page_title="Emotion Detection", page_icon="😊")
 st.title("🎭 Real-Time Emotion Detection")
 st.write("Turn on your webcam and let the model detect facial emotions!")
 
-# ✅ Load model once (Streamlit compatible caching)
-@st.cache_resource
+# ✅ Load model once (Streamlit compatible caching)@st.cache_resource
 def load_model():
-    return tf.keras.models.load_model("model.keras", compile=False)
+    return tf.keras.models.load_model("model_tf")
 
 model = load_model()
 
