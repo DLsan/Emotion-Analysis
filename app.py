@@ -2,34 +2,40 @@ import streamlit as st
 import cv2
 import numpy as np
 import tensorflow as tf
-import keras
 
 st.set_page_config(page_title="Emotion Detection", page_icon="😊")
 
 st.title("🎭 Real-Time Emotion Detection")
 st.write("Turn on your webcam and let the model detect facial emotions!")
 
-# Load model once
+# ✅ Load model once (Streamlit compatible caching)
 @st.cache_resource
 def load_model():
-    model = tf.keras.models.load_model("model.h5")
+    model = tf.keras.models.load_model("model.h5", compile=False)
     return model
 
 model = load_model()
+
 emotions = ['Angry','Disgust','Fear','Happy','Sad','Surprise','Neutral']
 
-# Webcam widget
+# ✅ Prevent crash if Haarcascade missing
+@st.cache_resource
+def load_cascade():
+    return cv2.CascadeClassifier(cv2.data.haarcascades + "haarcascade_frontalface_default.xml")
+
+face_cascade = load_cascade()
+
 img = st.camera_input("📸 Capture your face")
 
 if img:
     file_bytes = np.asarray(bytearray(img.read()), dtype=np.uint8)
     frame = cv2.imdecode(file_bytes, cv2.IMREAD_COLOR)
 
-    # Convert to gray
-    gray = cv2.cvtColor(frame, cv2.COLOR_BGR2GRAY)
+    if frame is None:
+        st.error("Failed to process image")
+        st.stop()
 
-    # Load Haar cascade
-    face_cascade = cv2.CascadeClassifier(cv2.data.haarcascades + "haarcascade_frontalface_default.xml")
+    gray = cv2.cvtColor(frame, cv2.COLOR_BGR2GRAY)
     faces = face_cascade.detectMultiScale(gray, 1.2, 5)
 
     for (x, y, w, h) in faces:
@@ -42,7 +48,6 @@ if img:
         emotion = emotions[idx]
         confidence = preds[0][idx] * 100
 
-        # Draw box & label
         cv2.rectangle(frame, (x,y), (x+w,y+h), (0,255,0), 2)
         cv2.putText(frame, f"{emotion} ({confidence:.1f}%)",
                     (x, y-10), cv2.FONT_HERSHEY_SIMPLEX, 0.8,
