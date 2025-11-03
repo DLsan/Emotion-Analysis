@@ -11,10 +11,10 @@ st.write("Turn on your webcam and let the model detect facial emotions!")
 # ✅ Load model once (Streamlit compatible caching)
 @st.cache_resource
 def load_model():
-    model = tf.keras.models.load_model("model.h5", compile=False)
-    return model
+    return tf.keras.models.load_model("model.h5", compile=False)
 
 model = load_model()
+
 
 emotions = ['Angry','Disgust','Fear','Happy','Sad','Surprise','Neutral']
 
